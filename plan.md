@@ -60,16 +60,36 @@ Data flows one way: component → hook → `getDb().<domain>.<method>()` → Sup
 
 ## 3. NevaForgetLoyalty (fantasy football), P0
 
-### 3.0 Open questions to settle before coding
+### 3.0 League facts
 
-1. **Platform:** ESPN, Sleeper or Yahoo? fantasyhub is ESPN-specific (needs
-   `ESPN_S2` / `ESPN_SWID` cookies for a private league). Sleeper has a public,
-   documented API with no cookies needed, which would make the sync simpler.
-2. **League size, divisions and playoff format** (team count, playoff weeks,
-   consolation bracket).
-3. **History:** how many past seasons we want to import, and where that data lives.
-4. **Money:** league dues, side bets and how payouts work (affects Takes and Pick'ems).
-5. **Who's admin/commissioner.**
+Confirmed from the league's ESPN settings (2026 season):
+
+| Setting | Value |
+|---|---|
+| Platform | **ESPN**, league "Neva Forget Loyalty (NFL)", private, so the sync needs `ESPN_S2` / `ESPN_SWID` cookies like fantasyhub |
+| Teams | **10** |
+| Scoring | Head-to-head points |
+| Season | Weeks 1–17, one-week playoff matchups |
+| Playoff seeding | **Total points scored**, not record (unusual, so the rankings and playoff-odds code must not assume record-based seeding) |
+| Lineup | QB, 2 RB, 2 WR, TE, FLEX, D/ST, K + 5 bench, 1 IR |
+| Draft | Auction, $200 budget; redraft (no keepers) |
+| Trades | Deadline Nov 25; no veto votes |
+| Past seasons on ESPN | 2021–2025, so History can import 2021 onward |
+
+Gotcha for the sync: ESPN team ids are **not contiguous** (1–7, 9–11, with no 8).
+Key everything on ESPN's team id and owner, never on array position or 1..10.
+
+fantasyhub is a 14-team league, so anything sized to 14 there (power-ranking
+normalization, the pick'em form, the head-to-head matrix, the playoff bracket)
+gets sized from the season config instead of hard-coded.
+
+### 3.0.1 Still open
+
+1. **Playoff format:** how many teams make it, how many playoff weeks, and
+   whether there's a consolation or toilet bowl.
+2. **Divisions:** do we have any?
+3. **Money:** league dues, side bets and how payouts work (affects Takes and Pick'ems).
+4. **Who's admin/commissioner.**
 
 ### 3.1 Phase 1: Foundation
 
@@ -170,7 +190,7 @@ previous one.
 
 ## 7. Milestones
 
-1. **M0:** Answer the §3.0 questions; create the Supabase project; scaffold the repo.
+1. **M0:** Answer the §3.0.1 questions; create the Supabase project; scaffold the repo.
 2. **M1:** Shell + auth + approvals; schema; schedule/week sync working against our league.
 3. **M2:** Home, Power Rankings, Schedule, Teams, Statistics live (the MVP).
 4. **M3:** Pick'ems + TD Parlay + Takes.
